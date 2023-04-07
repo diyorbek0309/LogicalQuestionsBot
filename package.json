@@ -1,0 +1,22 @@
+{
+  "name": "svoyakcalculatorbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "set NODE_ENV=production&& node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "node-fetch": "^3.2.6",
+    "node-telegram-bot-api": "^0.58.0",
+    "nodemon": "^2.0.18",
+    "pg": "^8.7.3",
+    "sequelize": "^6.21.2"
+  }
+}
