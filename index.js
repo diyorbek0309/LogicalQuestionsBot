@@ -36,7 +36,7 @@ async function main() {
     const data = callbackQuery.data;
     let score = 0;
 
-    if (data === "start") {
+    if (data === "start" || data === "restart") {
       const currentQuestion = questions[0];
       bot
         .sendMessage(chatId, `1-savol:\n\n${currentQuestion.question}`, {
@@ -53,8 +53,14 @@ async function main() {
           bot.answerCallbackQuery(callbackQuery.id);
         });
 
-      setTimeout(() => {
-        bot.sendMessage(chatId, "Vaqt tugadi!");
+      const timer = setTimeout(() => {
+        bot.sendMessage(chatId, "Vaqt tugadi!", {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "Qayta urinish", callback_data: "restart" }],
+            ],
+          },
+        });
       }, 5000);
     } else {
       const currentQuestion = questions[0];
@@ -103,15 +109,14 @@ async function main() {
           }, 5000);
         }, 2000);
       } else {
-        // End of the quiz
-        bot.sendMessage(chatId, "Savollarimiz tugadi!");
+        bot.sendMessage(chatId, "Savollarimiz tugadi!", {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "Qayta urinish", callback_data: "restart" }],
+            ],
+          },
+        });
       }
-    }
-  });
-
-  await bot.onText(/^[-+]?\d+?$/, (message) => {
-    if (message.reply_to_message) {
-      GamerController(message, bot, psql);
     }
   });
 
