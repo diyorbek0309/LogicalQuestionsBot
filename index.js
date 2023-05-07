@@ -9,6 +9,64 @@ const bot = new TelegramBot(TOKEN, { polling: true });
 async function main() {
   const psql = await postgres();
 
+  const MAX_TIME = 10000;
+  let currentQuestionIndex = 0;
+  let currentTimeoutId;
+  let correctAnswers = 0;
+  let incorrectAnswers = 0;
+
+  function askNextQuestion(chatId) {
+    if (currentQuestionIndex >= questions.length) {
+      const message = `Quiz ended. You got ${correctAnswers} out of ${questions.length} questions correct.`;
+      return bot.sendMessage(chatId, message);
+    }
+
+    const { question, options } = questions[currentQuestionIndex];
+    const replyMarkup = {
+      inline_keyboard: [
+        options.map((option) => ({ text: option, callback_data: option })),
+      ],
+    };
+    bot
+      .sendMessage(chatId, question, { reply_markup: replyMarkup })
+      .then((sentMessage) => {
+        currentMessageId = sentMessage.message_id;
+      });
+
+    currentTimeoutId = setTimeout(() => {
+      incorrectAnswers++;
+      currentQuestionIndex++;
+      // deleteCurrentMessage(chatId);
+      askNextQuestion(chatId);
+    }, MAX_TIME);
+  }
+
+  function deleteCurrentMessage(chatId) {
+    if (currentMessageId) {
+      bot.deleteMessage(chatId, currentMessageId);
+      currentMessageId = null;
+    }
+  }
+
+  bot.on("callback_query", (query) => {
+    clearTimeout(currentTimeoutId);
+    const answer = query.data[0].toUpperCase();
+    const correctAnswer = questions[currentQuestionIndex].answer;
+    const isCorrect = answer === correctAnswer;
+
+    if (isCorrect) {
+      bot.answerCallbackQuery(query.id, { text: "Correct!" });
+      correctAnswers++;
+    } else {
+      bot.answerCallbackQuery(query.id, { text: "Wrong!" });
+      incorrectAnswers++;
+    }
+
+    deleteCurrentMessage(query.message.chat.id);
+    currentQuestionIndex++;
+    setTimeout(() => askNextQuestion(query.message.chat.id), 1000);
+  });
+
   await bot.onText(/^\/start$/, (message) => {
     const chatId = message.chat.id;
     bot.sendMessage(
@@ -22,102 +80,24 @@ async function main() {
         `Mantiqiy savollar testini boshlash uchun Boshlash'ni bosing!`,
         {
           reply_markup: {
-            inline_keyboard: [[{ text: "Boshlash", callback_data: "start" }]],
+            keyboard: [[{ text: "Boshlash" }]],
+            resize_keyboard: true,
+            one_time_keyboard: true,
           },
         }
       );
+      bot.once("message", (message) => {
+        if (message.text === "Boshlash") {
+          currentQuestionIndex = 0;
+          correctAnswers = 0;
+          incorrectAnswers = 0;
+          bot.sendMessage(chatId, "Test boshlandi!");
+          askNextQuestion(message.chat.id);
+        } else {
+          bot.sendMessage(chatId, "Iltimos, Boshlash tugmasini bosing!");
+        }
+      });
     });
-  });
-
-  bot.on("callback_query", (callbackQuery) => {
-    const message = callbackQuery.message;
-    const chatId = message.chat.id;
-    const user = callbackQuery.from.username;
-    const data = callbackQuery.data;
-    let score = 0;
-
-    if (data === "start" || data === "restart") {
-      const currentQuestion = questions[0];
-      bot
-        .sendMessage(chatId, `1-savol:\n\n${currentQuestion.question}`, {
-          reply_markup: {
-            inline_keyboard: [
-              [{ text: currentQuestion.options[0], callback_data: "A" }],
-              [{ text: currentQuestion.options[1], callback_data: "B" }],
-              [{ text: currentQuestion.options[2], callback_data: "C" }],
-              [{ text: currentQuestion.options[3], callback_data: "D" }],
-            ],
-          },
-        })
-        .then(() => {
-          bot.answerCallbackQuery(callbackQuery.id);
-        });
-
-      const timer = setTimeout(() => {
-        bot.sendMessage(chatId, "Vaqt tugadi!", {
-          reply_markup: {
-            inline_keyboard: [
-              [{ text: "Qayta urinish", callback_data: "restart" }],
-            ],
-          },
-        });
-      }, 5000);
-    } else {
-      const currentQuestion = questions[0];
-
-      if (data[data.length - 1] === currentQuestion.answer) {
-        score++;
-        bot.sendMessage(
-          chatId,
-          `Ajoyib, ${user}! Ushbu savolga to'g'ri javob berdingiz!`,
-          {
-            reply_markup: {
-              remove_keyboard: true,
-            },
-          }
-        );
-      } else {
-        bot.sendMessage(
-          chatId,
-          `Afsuski, ushbu savolga noto'g'ri javob berdingiz!`,
-          {
-            reply_markup: {
-              remove_keyboard: true,
-            },
-          }
-        );
-      }
-      quiz.shift();
-
-      if (quiz.length > 0) {
-        setTimeout(() => {
-          const nextQuestion = quiz[0];
-
-          bot.sendMessage(chatId, nextQuestion.question, {
-            reply_markup: {
-              inline_keyboard: [
-                [{ text: nextQuestion.options[0], callback_data: "A" }],
-                [{ text: nextQuestion.options[1], callback_data: "B" }],
-                [{ text: nextQuestion.options[2], callback_data: "C" }],
-                [{ text: nextQuestion.options[3], callback_data: "D" }],
-              ],
-            },
-          });
-
-          setTimeout(() => {
-            bot.sendMessage(chatId, "Vaqt tugadi!");
-          }, 5000);
-        }, 2000);
-      } else {
-        bot.sendMessage(chatId, "Savollarimiz tugadi!", {
-          reply_markup: {
-            inline_keyboard: [
-              [{ text: "Qayta urinish", callback_data: "restart" }],
-            ],
-          },
-        });
-      }
-    }
   });
 
   await bot.onText(/\/help/, (message) => {
