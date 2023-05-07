@@ -14,10 +14,11 @@ async function main() {
   let currentTimeoutId;
   let correctAnswers = 0;
   let incorrectAnswers = 0;
+  let questionsCount = 5;
 
   function askNextQuestion(chatId) {
-    if (currentQuestionIndex >= questions.length) {
-      const message = `Quiz ended. You got ${correctAnswers} out of ${questions.length} questions correct.`;
+    if (currentQuestionIndex >= questionsCount) {
+      const message = `Savollar tugadi.\nSiz ${questionsCount} ta savoldan ${correctAnswers} tasiga toʻgʻri javob berdingiz.\nReytingdagi oʻrningiz: 12`;
       return bot.sendMessage(chatId, message);
     }
 
@@ -36,16 +37,30 @@ async function main() {
     currentTimeoutId = setTimeout(() => {
       incorrectAnswers++;
       currentQuestionIndex++;
-      // deleteCurrentMessage(chatId);
+      hideAnswerOptions(chatId);
       askNextQuestion(chatId);
     }, MAX_TIME);
   }
 
-  function deleteCurrentMessage(chatId) {
-    if (currentMessageId) {
-      bot.deleteMessage(chatId, currentMessageId);
-      currentMessageId = null;
-    }
+  function stopTest(chatId) {
+    clearTimeout(currentTimeoutId);
+    bot.sendMessage(
+      chatId,
+      `Test toʻxtatildi.\nSiz ${
+        currentQuestionIndex + 1
+      } ta savoldan ${correctAnswers} tasiga toʻgʻri javob berdingiz.\nReytingdagi oʻrningiz: 12`
+    );
+    currentQuestionIndex = 0;
+    correctAnswers = 0;
+    incorrectAnswers = 0;
+    hideAnswerOptions(chatId);
+  }
+
+  function hideAnswerOptions(chatId) {
+    bot.editMessageReplyMarkup(
+      {},
+      { chat_id: chatId, message_id: currentMessageId }
+    );
   }
 
   bot.on("callback_query", (query) => {
@@ -55,14 +70,14 @@ async function main() {
     const isCorrect = answer === correctAnswer;
 
     if (isCorrect) {
-      bot.answerCallbackQuery(query.id, { text: "Correct!" });
+      bot.answerCallbackQuery(query.id, { text: "Toʻgʻri!" });
       correctAnswers++;
     } else {
-      bot.answerCallbackQuery(query.id, { text: "Wrong!" });
+      bot.answerCallbackQuery(query.id, { text: "Notoʻgʻri!" });
       incorrectAnswers++;
     }
 
-    deleteCurrentMessage(query.message.chat.id);
+    hideAnswerOptions(query.message.chat.id);
     currentQuestionIndex++;
     setTimeout(() => askNextQuestion(query.message.chat.id), 1000);
   });
@@ -77,34 +92,65 @@ async function main() {
       const name = message.text;
       bot.sendMessage(
         chatId,
-        `Mantiqiy savollar testini boshlash uchun Boshlash'ni bosing!`,
+        `${name} Mantiqiy savollar botimizga Xush kelibsiz!\nHar bir savol uchun 30 sekund vaqt beriladi. Nechta savolga javob berishni xohlaysiz?`,
         {
           reply_markup: {
-            keyboard: [[{ text: "Boshlash" }]],
+            keyboard: [[{ text: "5" }], [{ text: "10" }], [{ text: "20" }]],
             resize_keyboard: true,
             one_time_keyboard: true,
           },
         }
       );
       bot.once("message", (message) => {
-        if (message.text === "Boshlash") {
+        if (
+          message.text === "5" ||
+          message.text === "10" ||
+          message.text === "20"
+        ) {
+          questionsCount = +message.text;
           currentQuestionIndex = 0;
           correctAnswers = 0;
           incorrectAnswers = 0;
-          bot.sendMessage(chatId, "Test boshlandi!");
-          askNextQuestion(message.chat.id);
+          bot.sendMessage(
+            chatId,
+            `${message.text} ta savol. Har bir savol uchun 30 sekund vaqt.\nTayyor bo'lsangiz Boshlash'ni bosing!`,
+            {
+              reply_markup: {
+                keyboard: [[{ text: "Boshlash" }]],
+                resize_keyboard: true,
+                one_time_keyboard: true,
+              },
+            }
+          );
+          bot.once("message", (message) => {
+            if (message.text === "Boshlash") {
+              currentQuestionIndex = 0;
+              correctAnswers = 0;
+              incorrectAnswers = 0;
+              bot.sendMessage(chatId, "Test boshlandi!");
+              setTimeout(() => {
+                askNextQuestion(message.chat.id);
+              }, 500);
+            } else {
+              bot.sendMessage(chatId, "Iltimos, Boshlash tugmasini bosing!");
+            }
+          });
         } else {
-          bot.sendMessage(chatId, "Iltimos, Boshlash tugmasini bosing!");
+          bot.sendMessage(
+            chatId,
+            "Iltimos, quyidagi tugmalardan birini bosing!"
+          );
         }
       });
     });
   });
 
+  await bot.onText(/\/stopTest/, (msg) => {
+    stopTest(msg.chat.id);
+  });
+
   await bot.onText(/\/help/, (message) => {
-    bot.sendMessage(
-      message.chat.id,
-      `Botdan foydalanish uchun buyruqlar:\n\n/startSvoyak - oʻyinni boshlash buyruqi. Ushbu buyruqni bergan foydalanuvchi oʻyin boshlovchisi hisoblanadi va ochko berish imkoniyatiga ega boʻladi. Ochkolar xabarga javob sifatida berilishi kerak.\n\n/changeCreator - boshlovchini oʻzgartirish buyruqi. Ushbu buyruqdan amaldagi boshlovchi yoki guruh adminlari foydalanishi mumkin. Buyruq xabarga javob sifatida berilishi kerak.\n\n/removeMe - tablodan oʻz ismingizni oʻchirish uchun ishlatishingiz mumkin.\n\n/endSvoyak - oʻyinni yakunlash va natijalarni e'lon qilish buyruqi. Ushbu buyruqdan amaldagi boshlovchi yoki guruh adminlari foydalanishi mumkin.`
-    );
+    bot.sendMessage(message.chat.id, `Botdan foydalanish uchun buyruqlar`);
   });
 
   await bot.onText(/\/about/, (message) => {
