@@ -75,7 +75,7 @@ async function QuestionsController(message, bot, psql) {
           incorrectAnswers = 0;
           bot.sendMessage(chatId, "Test boshlandi!");
           setTimeout(() => {
-            askNextQuestion(bot, message.chat.id);
+            askNextQuestion(bot, message.chat.id, psql);
           }, 500);
         } else {
           bot.sendMessage(chatId, "Iltimos, Boshlash tugmasini bosing!");
@@ -121,7 +121,7 @@ async function QuestionsController(message, bot, psql) {
             if (message.text === "Boshlash") {
               bot.sendMessage(chatId, "Test boshlandi!");
               setTimeout(() => {
-                askNextQuestion(bot, message.chat.id);
+                askNextQuestion(bot, message.chat.id, psql);
               }, 500);
             } else {
               bot.sendMessage(chatId, "Iltimos, Boshlash tugmasini bosing!");
@@ -144,12 +144,28 @@ async function QuestionsController(message, bot, psql) {
     }
     hideAnswerOptions(bot, query.message.chat.id);
     currentQuestionIndex++;
-    setTimeout(() => askNextQuestion(bot, query.message.chat.id), 1000);
+    setTimeout(() => askNextQuestion(bot, query.message.chat.id, psql), 1000);
   });
 }
 
-function askNextQuestion(bot, chatId) {
+async function askNextQuestion(bot, chatId, psql) {
   if (currentQuestionIndex >= questionsCount) {
+    const user = await psql.users.findOne({
+      where: {
+        user_id: chatId,
+      },
+    });
+
+    const currentScore = { correctAnswers, questionsCount, date: Date.now() };
+
+    if (user.score) {
+      user.score.push(currentScore);
+    } else {
+      user.score = [currentScore];
+    }
+    console.log(user.score);
+    await user.save();
+
     const message = `Savollar tugadi.\nSiz ${questionsCount} ta savoldan ${correctAnswers} tasiga toʻgʻri javob berdingiz.\nReytingdagi oʻrningiz: 12`;
     const replyMarkup = {
       inline_keyboard: [
