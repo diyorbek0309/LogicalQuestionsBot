@@ -18,13 +18,12 @@ module.exports = class Models {
           type: Sequelize.DataTypes.STRING,
         },
         score: {
-          type: Sequelize.DataTypes.INTEGER,
+          type: Sequelize.DataTypes.ARRAY(Sequelize.DataTypes.JSON),
+          allowNull: true,
         },
         answeredQuestions: {
-          type: Sequelize.DataTypes.INTEGER,
-        },
-        date: {
-          type: Sequelize.DataTypes.BIGINT,
+          type: Sequelize.DataTypes.ARRAY(Sequelize.DataTypes.INTEGER),
+          allowNull: true,
         },
       },
       { timestamps: true }
