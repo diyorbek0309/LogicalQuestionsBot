@@ -4,6 +4,7 @@ const {
   QuestionsController,
   stopTest,
 } = require("./controllers/QuestionsController");
+const ExtraControllers = require("./controllers/ExtraControllers");
 const postgres = require("./modules/postgres");
 
 const bot = new TelegramBot(TOKEN, { polling: true });
@@ -19,15 +20,16 @@ async function main() {
     stopTest(message.chat.id);
   });
 
+  await bot.onText(/\/stats$/, (message) => {
+    ExtraControllers.StatsController(message, bot, psql);
+  });
+
   await bot.onText(/\/help/, (message) => {
     bot.sendMessage(message.chat.id, `Botdan foydalanish uchun buyruqlar`);
   });
 
   await bot.onText(/\/about/, (message) => {
-    bot.sendMessage(
-      message.chat.id,
-      `Shaxsiy oʻyin jarayonida ochkolarni hisoblab boruvchi bot.\nDasturchi: @dasturchining_tundaligi`
-    );
+    bot.sendMessage(message.chat.id, `Mantiqiy savollar boti`);
   });
 }
 

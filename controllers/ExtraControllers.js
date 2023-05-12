@@ -1,65 +1,68 @@
-const sendResults = require("../services/sendResults");
-
 module.exports = class ExtraControllers {
-  static async MessageController(message, bot, psql) {
-    const chat_id = message.chat.id;
+  static async StatsController(message, bot, psql) {
+    const chatId = message.chat.id;
     try {
-      const user = await psql.users.findOne({
-        where: {
-          chat_id,
-        },
+      const users = await psql.users.findAll();
+      // console.log(users);
+      // console.log(users[0].score);
+      // console.log(users[1].score);
+
+      function getBestResult(user) {
+        if (!user.score || user.score.length === 0) {
+          return null;
+        }
+
+        let best = user.score[0];
+        for (const score of user.score) {
+          const percent = (score.correctAnswers / score.questionsCount) * 100;
+          const bestPercent = (best.correctAnswers / best.questionsCount) * 100;
+
+          if (percent > bestPercent) {
+            best = score;
+          } else if (percent === bestPercent && score.date > best.date) {
+            best = score;
+          }
+        }
+
+        return best;
+      }
+
+      // Sort the users array based on the best result and correctness percentage
+      const data = users.sort((a, b) => {
+        const aBest = getBestResult(a);
+        const bBest = getBestResult(b);
+
+        if (!aBest && !bBest) {
+          return 0;
+        } else if (!aBest) {
+          return 1;
+        } else if (!bBest) {
+          return -1;
+        }
+
+        const aPercent = (aBest.correctAnswers / aBest.questionsCount) * 100;
+        const bPercent = (bBest.correctAnswers / bBest.questionsCount) * 100;
+
+        if (aPercent > bPercent) {
+          return -1;
+        } else if (aPercent < bPercent) {
+          return 1;
+        } else if (aBest.date > bBest.date) {
+          return -1;
+        } else if (aBest.date < bBest.date) {
+          return 1;
+        } else {
+          return 0;
+        }
       });
 
-      if (!user) {
-        await psql.users.create({
-          chat_id,
-        });
+      // console.log(data);
 
-        await bot.sendMessage(chat_id, `Siz botda yangisiz!`);
-      } else {
-        await bot.sendMessage(chat_id, `Siz botda roʻyxatdan oʻtgansiz!`);
-      }
+      // await bot.sendMessage(chatId, `Siz botda roʻyxatdan oʻtgansiz!`);
     } catch (error) {
       console.log(error);
-      await bot.sendMessage(chat_id, `Qandaydir xatolik sodir boʻldi!`);
+      await bot.sendMessage(chatId, `Qandaydir xatolik sodir boʻldi!`);
     }
-  }
-
-  static async StatsController(message, bot, psql) {
-    const group_id = message.chat.id;
-    const games = await psql.games.findAll();
-    const botId = 5536335495;
-    let groupIDs = [];
-    games.forEach((game) => groupIDs.push(game.group_id));
-    groupIDs = [...new Set(groupIDs)];
-
-    // try {
-    // bot.getChatMember(groupIDs[8], botId).then((chatMember) => {
-    //   if (chatMember.status === "member") {
-    //     console.log("Bot is a member of the group", groupIDs[8]);
-    //   } else {
-    //     console.log("Bot is not a member of the group", groupIDs[8]);
-    //   }
-    // });
-    // groupIDs.forEach(async (groupID) => {
-    //   bot.getChatMember(groupID, botId).then((chatMember) => {
-    //     if (chatMember.status === "member") {
-    //       console.log("Bot is a member of the group", groupID);
-    //     } else {
-    //       console.log("Bot is not a member of the group", groupID);
-    //     }
-    //   });
-
-    //   // const group = await bot.getChat(groupID);
-    //   // console.log(group);
-    //   // const count = await bot.getChatMembersCount(groupID);
-    //   // const message = `Group Title: ${group.title}\nUser's count: ${count}`;
-    //   // console.log(message);
-    //   // await bot.sendMessage(group_id, message);
-    // });
-    // } catch (error) {
-    //   console.log(error.message);
-    // }
   }
 
   static async ChangeCreator(message, bot, psql) {
