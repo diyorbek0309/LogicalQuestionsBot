@@ -153,7 +153,6 @@ async function QuestionsController(message, bot, psql) {
           questionsCount = +message.text;
           currentQuestionIndex = 0;
           correctAnswers = 0;
-          incorrectAnswers = 0;
 
           await bot.sendMessage(
             chatId,
@@ -255,7 +254,6 @@ async function stopTest(bot, chatId) {
   );
   currentQuestionIndex = 0;
   correctAnswers = 0;
-  incorrectAnswers = 0;
   // hideAnswerOptions(bot, chatId);
 }
 
