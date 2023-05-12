@@ -17,7 +17,7 @@ async function main() {
   });
 
   await bot.onText(/\/stopTest$/, (message) => {
-    stopTest(message.chat.id);
+    stopTest(bot, message.chat.id);
   });
 
   await bot.onText(/\/stats$/, (message) => {

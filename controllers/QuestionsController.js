@@ -17,6 +17,7 @@ async function QuestionsController(message, bot, psql) {
   });
 
   if (!existingUser) {
+    clearTimeout(currentTimeoutId);
     await bot.sendMessage(
       chatId,
       `Assalomu aleykum. Xush kelibsiz!\nBotdan toʻliq foydalanish uchun ism va familiyangizni kiriting!`
@@ -78,6 +79,74 @@ async function QuestionsController(message, bot, psql) {
         }
       });
     });
+
+    bot.on("callback_query", async (query) => {
+      clearTimeout(currentTimeoutId);
+
+      if (query.data === "restartQuiz") {
+        await bot.sendMessage(
+          chatId,
+          `Nechta savolga javob berishni xohlaysiz?`,
+          {
+            reply_markup: {
+              keyboard: [[{ text: "5" }], [{ text: "10" }], [{ text: "20" }]],
+              resize_keyboard: true,
+              one_time_keyboard: true,
+            },
+          }
+        );
+        bot.once("message", async (message) => {
+          if (
+            message.text === "5" ||
+            message.text === "10" ||
+            message.text === "20"
+          ) {
+            questionsCount = +message.text;
+            currentQuestionIndex = 0;
+            correctAnswers = 0;
+
+            await bot.sendMessage(
+              chatId,
+              `${message.text} ta savol. Har bir savol uchun 30 sekund vaqt.\nTayyor bo'lsangiz Boshlash'ni bosing!`,
+              {
+                reply_markup: {
+                  keyboard: [[{ text: "Boshlash" }]],
+                  resize_keyboard: true,
+                  one_time_keyboard: true,
+                },
+              }
+            );
+            bot.once("message", async (message) => {
+              if (message.text === "Boshlash") {
+                await bot.sendMessage(chatId, "Test boshlandi!");
+                setTimeout(() => {
+                  askNextQuestion(bot, message.chat.id, psql);
+                }, 1000);
+              } else {
+                await bot.sendMessage(
+                  chatId,
+                  "Iltimos, Boshlash tugmasini bosing!"
+                );
+              }
+            });
+          }
+        });
+      }
+
+      const answer = query.data[0].toUpperCase();
+      const correctAnswer = questions[currentQuestionIndex].answer;
+      const isCorrect = answer === correctAnswer;
+
+      if (isCorrect) {
+        bot.answerCallbackQuery(query.id, { text: "Toʻgʻri!" });
+        correctAnswers++;
+      } else {
+        bot.answerCallbackQuery(query.id, { text: "Notoʻgʻri!" });
+      }
+      // hideAnswerOptions(bot, query.message.chat.id);
+      currentQuestionIndex++;
+      setTimeout(() => askNextQuestion(bot, query.message.chat.id, psql), 1000);
+    });
   } else {
     await bot.sendMessage(
       chatId,
@@ -127,75 +196,75 @@ async function QuestionsController(message, bot, psql) {
         });
       }
     });
+
+    bot.on("callback_query", async (query) => {
+      clearTimeout(currentTimeoutId);
+
+      if (query.data === "restartQuiz") {
+        await bot.sendMessage(
+          chatId,
+          `Nechta savolga javob berishni xohlaysiz?`,
+          {
+            reply_markup: {
+              keyboard: [[{ text: "5" }], [{ text: "10" }], [{ text: "20" }]],
+              resize_keyboard: true,
+              one_time_keyboard: true,
+            },
+          }
+        );
+        bot.once("message", async (message) => {
+          if (
+            message.text === "5" ||
+            message.text === "10" ||
+            message.text === "20"
+          ) {
+            questionsCount = +message.text;
+            currentQuestionIndex = 0;
+            correctAnswers = 0;
+
+            await bot.sendMessage(
+              chatId,
+              `${message.text} ta savol. Har bir savol uchun 30 sekund vaqt.\nTayyor bo'lsangiz Boshlash'ni bosing!`,
+              {
+                reply_markup: {
+                  keyboard: [[{ text: "Boshlash" }]],
+                  resize_keyboard: true,
+                  one_time_keyboard: true,
+                },
+              }
+            );
+            bot.once("message", async (message) => {
+              if (message.text === "Boshlash") {
+                await bot.sendMessage(chatId, "Test boshlandi!");
+                setTimeout(() => {
+                  askNextQuestion(bot, message.chat.id, psql);
+                }, 1000);
+              } else {
+                await bot.sendMessage(
+                  chatId,
+                  "Iltimos, Boshlash tugmasini bosing!"
+                );
+              }
+            });
+          }
+        });
+      }
+
+      const answer = query.data[0].toUpperCase();
+      const correctAnswer = questions[currentQuestionIndex].answer;
+      const isCorrect = answer === correctAnswer;
+
+      if (isCorrect) {
+        bot.answerCallbackQuery(query.id, { text: "Toʻgʻri!" });
+        correctAnswers++;
+      } else {
+        bot.answerCallbackQuery(query.id, { text: "Notoʻgʻri!" });
+      }
+      // hideAnswerOptions(bot, query.message.chat.id);
+      currentQuestionIndex++;
+      setTimeout(() => askNextQuestion(bot, query.message.chat.id, psql), 1000);
+    });
   }
-
-  bot.on("callback_query", async (query) => {
-    clearTimeout(currentTimeoutId);
-
-    if (query.data === "restartQuiz") {
-      await bot.sendMessage(
-        chatId,
-        `Nechta savolga javob berishni xohlaysiz?`,
-        {
-          reply_markup: {
-            keyboard: [[{ text: "5" }], [{ text: "10" }], [{ text: "20" }]],
-            resize_keyboard: true,
-            one_time_keyboard: true,
-          },
-        }
-      );
-      bot.once("message", async (message) => {
-        if (
-          message.text === "5" ||
-          message.text === "10" ||
-          message.text === "20"
-        ) {
-          questionsCount = +message.text;
-          currentQuestionIndex = 0;
-          correctAnswers = 0;
-
-          await bot.sendMessage(
-            chatId,
-            `${message.text} ta savol. Har bir savol uchun 30 sekund vaqt.\nTayyor bo'lsangiz Boshlash'ni bosing!`,
-            {
-              reply_markup: {
-                keyboard: [[{ text: "Boshlash" }]],
-                resize_keyboard: true,
-                one_time_keyboard: true,
-              },
-            }
-          );
-          bot.once("message", async (message) => {
-            if (message.text === "Boshlash") {
-              await bot.sendMessage(chatId, "Test boshlandi!");
-              setTimeout(() => {
-                askNextQuestion(bot, message.chat.id, psql);
-              }, 1000);
-            } else {
-              await bot.sendMessage(
-                chatId,
-                "Iltimos, Boshlash tugmasini bosing!"
-              );
-            }
-          });
-        }
-      });
-    }
-
-    const answer = query.data[0].toUpperCase();
-    const correctAnswer = questions[currentQuestionIndex].answer;
-    const isCorrect = answer === correctAnswer;
-
-    if (isCorrect) {
-      bot.answerCallbackQuery(query.id, { text: "Toʻgʻri!" });
-      correctAnswers++;
-    } else {
-      bot.answerCallbackQuery(query.id, { text: "Notoʻgʻri!" });
-    }
-    // hideAnswerOptions(bot, query.message.chat.id);
-    currentQuestionIndex++;
-    setTimeout(() => askNextQuestion(bot, query.message.chat.id, psql), 1000);
-  });
 }
 
 async function askNextQuestion(bot, chatId, psql) {
@@ -246,11 +315,15 @@ async function askNextQuestion(bot, chatId, psql) {
 
 async function stopTest(bot, chatId) {
   clearTimeout(currentTimeoutId);
+  const replyMarkup = {
+    inline_keyboard: [[{ text: "Davom etish", callback_data: "restartQuiz" }]],
+  };
   await bot.sendMessage(
     chatId,
     `Test toʻxtatildi.\nSiz ${
       currentQuestionIndex + 1
-    } ta savoldan ${correctAnswers} tasiga toʻgʻri javob berdingiz.\nReytingdagi oʻrningiz: 12`
+    } ta savoldan ${correctAnswers} tasiga toʻgʻri javob berdingiz.\nReytingdagi oʻrningiz: 12`,
+    { reply_markup: replyMarkup }
   );
   currentQuestionIndex = 0;
   correctAnswers = 0;
