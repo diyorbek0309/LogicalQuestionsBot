@@ -39,31 +39,31 @@ const questions = [
     ],
     answer: "C",
   },
-  {
-    question: "What is the highest waterfall in the world?",
-    options: [
-      "A) Niagara Falls",
-      "B) Angel Falls",
-      "C) Victoria Falls",
-      "D) Iguazu Falls",
-    ],
-    answer: "B",
-  },
-  {
-    question: "What is the most populous country in the world?",
-    options: ["A) India", "B) United States", "C) China", "D) Russia"],
-    answer: "C",
-  },
-  {
-    question: "What is the smallest continent in the world?",
-    options: ["A) Europe", "B) Asia", "C) Africa", "D) Australia"],
-    answer: "D",
-  },
-  {
-    question: "What is the currency of Japan?",
-    options: ["A) Yen", "B) Dollar", "C) Euro", "D) Pound"],
-    answer: "A",
-  },
+  // {
+  //   question: "What is the highest waterfall in the world?",
+  //   options: [
+  //     "A) Niagara Falls",
+  //     "B) Angel Falls",
+  //     "C) Victoria Falls",
+  //     "D) Iguazu Falls",
+  //   ],
+  //   answer: "B",
+  // },
+  // {
+  //   question: "What is the most populous country in the world?",
+  //   options: ["A) India", "B) United States", "C) China", "D) Russia"],
+  //   answer: "C",
+  // },
+  // {
+  //   question: "What is the smallest continent in the world?",
+  //   options: ["A) Europe", "B) Asia", "C) Africa", "D) Australia"],
+  //   answer: "D",
+  // },
+  // {
+  //   question: "What is the currency of Japan?",
+  //   options: ["A) Yen", "B) Dollar", "C) Euro", "D) Pound"],
+  //   answer: "A",
+  // },
 ];
 
 module.exports = { questions };

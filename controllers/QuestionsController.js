@@ -5,6 +5,7 @@ let currentQuestionIndex = 0;
 let currentTimeoutId, currentMessageId;
 let correctAnswers = 0;
 let questionsCount = 5;
+let selectedQuestions = shuffleQuestions(questions).slice(0, questionsCount);
 
 async function QuestionsController(message, bot, psql) {
   const chatId = message.from.id;
@@ -48,6 +49,10 @@ async function QuestionsController(message, bot, psql) {
           message.text === "20"
         ) {
           questionsCount = +message.text;
+          selectedQuestions = shuffleQuestions(questions).slice(
+            0,
+            questionsCount
+          );
           currentQuestionIndex = 0;
           correctAnswers = 0;
           await bot.sendMessage(
@@ -96,12 +101,17 @@ async function QuestionsController(message, bot, psql) {
           }
         );
         bot.once("message", async (message) => {
+          console.log(message);
           if (
             message.text === "5" ||
             message.text === "10" ||
             message.text === "20"
           ) {
             questionsCount = +message.text;
+            selectedQuestions = shuffleQuestions(questions).slice(
+              0,
+              questionsCount
+            );
             currentQuestionIndex = 0;
             correctAnswers = 0;
 
@@ -166,6 +176,10 @@ async function QuestionsController(message, bot, psql) {
         message.text === "20"
       ) {
         questionsCount = +message.text;
+        selectedQuestions = shuffleQuestions(questions).slice(
+          0,
+          questionsCount
+        );
         currentQuestionIndex = 0;
         correctAnswers = 0;
         await bot.sendMessage(
@@ -219,6 +233,10 @@ async function QuestionsController(message, bot, psql) {
             message.text === "20"
           ) {
             questionsCount = +message.text;
+            selectedQuestions = shuffleQuestions(questions).slice(
+              0,
+              questionsCount
+            );
             currentQuestionIndex = 0;
             correctAnswers = 0;
 
@@ -268,6 +286,9 @@ async function QuestionsController(message, bot, psql) {
 }
 
 async function askNextQuestion(bot, chatId, psql) {
+  // if (currentQuestionIndex > 1) {
+  // hideAnswerOptions(bot, chatId);
+  // }
   if (currentQuestionIndex >= questionsCount) {
     const user = await psql.users.findOne({
       where: {
@@ -285,7 +306,7 @@ async function askNextQuestion(bot, chatId, psql) {
 
     await user.save();
 
-    const message = `Savollar tugadi.\nSiz ${questionsCount} ta savoldan ${correctAnswers} tasiga toʻgʻri javob berdingiz.\nReytingdagi oʻrningiz: 12`;
+    const message = `Savollar tugadi.\nSiz ${questionsCount} ta savoldan ${correctAnswers} tasiga toʻgʻri javob berdingiz.`;
     const replyMarkup = {
       inline_keyboard: [
         [{ text: "Qayta boshlash", callback_data: "restartQuiz" }],
@@ -294,7 +315,7 @@ async function askNextQuestion(bot, chatId, psql) {
     return bot.sendMessage(chatId, message, { reply_markup: replyMarkup });
   }
 
-  const { question, options } = questions[currentQuestionIndex];
+  const { question, options } = selectedQuestions[currentQuestionIndex];
   const replyMarkup = {
     inline_keyboard: [
       options.map((option) => ({ text: option, callback_data: option })),
@@ -308,7 +329,6 @@ async function askNextQuestion(bot, chatId, psql) {
 
   currentTimeoutId = setTimeout(() => {
     currentQuestionIndex++;
-    // hideAnswerOptions(bot, chatId);
     askNextQuestion(bot, chatId, psql);
   }, MAX_TIME);
 }
@@ -322,19 +342,27 @@ async function stopTest(bot, chatId) {
     chatId,
     `Test toʻxtatildi.\nSiz ${
       currentQuestionIndex + 1
-    } ta savoldan ${correctAnswers} tasiga toʻgʻri javob berdingiz.\nReytingdagi oʻrningiz: 12`,
+    } ta savoldan ${correctAnswers} tasiga toʻgʻri javob berdingiz.`,
     { reply_markup: replyMarkup }
   );
   currentQuestionIndex = 0;
   correctAnswers = 0;
-  // hideAnswerOptions(bot, chatId);
+  hideAnswerOptions(bot, chatId);
 }
 
-function hideAnswerOptions(bot, chatId) {
-  bot.editMessageReplyMarkup(
+async function hideAnswerOptions(bot, chatId) {
+  await bot.editMessageReplyMarkup(
     {},
     { chat_id: chatId, message_id: currentMessageId }
   );
+}
+
+function shuffleQuestions(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
 }
 
 module.exports = { QuestionsController, stopTest };

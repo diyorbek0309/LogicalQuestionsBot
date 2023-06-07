@@ -3,65 +3,55 @@ module.exports = class ExtraControllers {
     const chatId = message.chat.id;
     try {
       const users = await psql.users.findAll();
-      // console.log(users);
-      // console.log(users[0].score);
-      // console.log(users[1].score);
+      console.log(users[0]);
+      console.log(users[0].score);
 
-      function getBestResult(user) {
-        if (!user.score || user.score.length === 0) {
-          return null;
-        }
-
-        let best = user.score[0];
-        for (const score of user.score) {
-          const percent = (score.correctAnswers / score.questionsCount) * 100;
-          const bestPercent = (best.correctAnswers / best.questionsCount) * 100;
-
-          if (percent > bestPercent) {
-            best = score;
-          } else if (percent === bestPercent && score.date > best.date) {
-            best = score;
-          }
-        }
-
-        return best;
-      }
-
-      // Sort the users array based on the best result and correctness percentage
-      const data = users.sort((a, b) => {
-        const aBest = getBestResult(a);
-        const bBest = getBestResult(b);
-
-        if (!aBest && !bBest) {
-          return 0;
-        } else if (!aBest) {
-          return 1;
-        } else if (!bBest) {
-          return -1;
-        }
-
-        const aPercent = (aBest.correctAnswers / aBest.questionsCount) * 100;
-        const bPercent = (bBest.correctAnswers / bBest.questionsCount) * 100;
-
-        if (aPercent > bPercent) {
-          return -1;
-        } else if (aPercent < bPercent) {
-          return 1;
-        } else if (aBest.date > bBest.date) {
-          return -1;
-        } else if (aBest.date < bBest.date) {
-          return 1;
-        } else {
-          return 0;
-        }
+      const sortedUsers = users.sort((a, b) => {
+        const percentA =
+          (a.score &&
+            a.score.filter((item) => item.correctAnswers > 0).length /
+              a.score.length) * 100;
+        const percentB =
+          (b.score &&
+            b.score.filter((item) => item.correctAnswers > 0).length /
+              b.score.length) * 100;
+        return percentB - percentA;
       });
 
-      // console.log(data);
+      let message = "📊 Natijalar 📊\n\n";
+      sortedUsers.forEach((user, index) => {
+        const bestResult =
+          user.score &&
+          Math.max(...user.score.map((item) => item.correctAnswers));
+        const bestResultPercentage =
+          user.score && (bestResult / user.score[0].questionsCount) * 100;
+        const bestResultFormatted =
+          user.score && `${bestResult}/${user.score[0].questionsCount}`;
 
-      // await bot.sendMessage(chatId, `Siz botda roʻyxatdan oʻtgansiz!`);
+        message += bestResultPercentage
+          ? `${getEmoji(index + 1)} ${
+              user.name
+            }: ${bestResultPercentage.toFixed(0)}%   ${bestResultFormatted}\n`
+          : "";
+      });
+
+      await bot.sendMessage(chatId, message);
     } catch (error) {
       console.log(error);
       await bot.sendMessage(chatId, `Qandaydir xatolik sodir boʻldi!`);
     }
   }
 };
+
+function getEmoji(rank) {
+  switch (rank) {
+    case 1:
+      return "🥇";
+    case 2:
+      return "🥈";
+    case 3:
+      return "🥉";
+    default:
+      return `${rank}.`;
+  }
+}
