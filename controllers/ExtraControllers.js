@@ -3,20 +3,20 @@ module.exports = class ExtraControllers {
     const chatId = message.chat.id;
     try {
       const users = await psql.users.findAll();
-      console.log(users[0]);
-      console.log(users[0].score);
 
-      const sortedUsers = users.sort((a, b) => {
-        const percentA =
-          (a.score &&
-            a.score.filter((item) => item.correctAnswers > 0).length /
-              a.score.length) * 100;
-        const percentB =
-          (b.score &&
-            b.score.filter((item) => item.correctAnswers > 0).length /
-              b.score.length) * 100;
-        return percentB - percentA;
+      users.forEach((user) => {
+        let bestPercent = 0;
+        user.score.forEach((score) => {
+          const percentCorrectAnswers =
+            (score.correctAnswers / score.questionsCount) * 100;
+          if (percentCorrectAnswers > bestPercent) {
+            bestPercent = percentCorrectAnswers;
+          }
+        });
+        user.bestPercent = bestPercent;
       });
+
+      const sortedUsers = users.sort((a, b) => b.bestPercent - a.bestPercent);
 
       let message = "📊 Natijalar 📊\n\n";
       sortedUsers.forEach((user, index) => {
