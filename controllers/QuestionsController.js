@@ -1,6 +1,6 @@
 const { questions } = require("../questions.js");
 
-const MAX_TIME = 5000;
+const MAX_TIME = 20000;
 let currentQuestionIndex = 0;
 let currentTimeoutId, currentMessageId;
 let correctAnswers = 0;
