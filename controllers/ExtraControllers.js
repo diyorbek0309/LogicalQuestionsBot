@@ -6,13 +6,14 @@ module.exports = class ExtraControllers {
 
       users.forEach((user) => {
         let bestPercent = 0;
-        user.score.forEach((score) => {
-          const percentCorrectAnswers =
-            (score.correctAnswers / score.questionsCount) * 100;
-          if (percentCorrectAnswers > bestPercent) {
-            bestPercent = percentCorrectAnswers;
-          }
-        });
+        user.score &&
+          user.score.forEach((score) => {
+            const percentCorrectAnswers =
+              (score.correctAnswers / score.questionsCount) * 100;
+            if (percentCorrectAnswers > bestPercent) {
+              bestPercent = percentCorrectAnswers;
+            }
+          });
         user.bestPercent = bestPercent;
       });
 

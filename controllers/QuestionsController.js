@@ -32,7 +32,7 @@ async function QuestionsController(message, bot, psql) {
 
       await bot.sendMessage(
         chatId,
-        `${message.text} Mantiqiy savollar botimizga Xush kelibsiz!\nHar bir savol uchun 30 sekund vaqt beriladi. Nechta savolga javob berishni xohlaysiz?`,
+        `${message.text} Mantiqiy savollar botimizga Xush kelibsiz!\nHar bir savol uchun 20 sekund vaqt beriladi. Nechta savolga javob berishni xohlaysiz?`,
         {
           reply_markup: {
             keyboard: [[{ text: "5" }], [{ text: "10" }], [{ text: "20" }]],
@@ -57,7 +57,7 @@ async function QuestionsController(message, bot, psql) {
           correctAnswers = 0;
           await bot.sendMessage(
             chatId,
-            `${message.text} ta savol. Har bir savol uchun 30 sekund vaqt.\nTayyor bo'lsangiz Boshlash'ni bosing!`,
+            `${message.text} ta savol. Har bir savol uchun 20 sekund vaqt.\nTayyor bo'lsangiz Boshlash'ni bosing!`,
             {
               reply_markup: {
                 keyboard: [[{ text: "Boshlash" }]],
@@ -117,7 +117,7 @@ async function QuestionsController(message, bot, psql) {
 
             await bot.sendMessage(
               chatId,
-              `${message.text} ta savol. Har bir savol uchun 30 sekund vaqt.\nTayyor bo'lsangiz Boshlash'ni bosing!`,
+              `${message.text} ta savol. Har bir savol uchun 20 sekund vaqt.\nTayyor bo'lsangiz Boshlash'ni bosing!`,
               {
                 reply_markup: {
                   keyboard: [[{ text: "Boshlash" }]],
@@ -162,7 +162,7 @@ async function QuestionsController(message, bot, psql) {
   } else {
     await bot.sendMessage(
       chatId,
-      `${existingUser.name} Mantiqiy savollar botimizga Xush kelibsiz!\nHar bir savol uchun 30 sekund vaqt beriladi. Nechta savolga javob berishni xohlaysiz?`,
+      `${existingUser.name} Mantiqiy savollar botimizga Xush kelibsiz!\nHar bir savol uchun 20 sekund vaqt beriladi. Nechta savolga javob berishni xohlaysiz?`,
       {
         reply_markup: {
           keyboard: [[{ text: "5" }], [{ text: "10" }], [{ text: "20" }]],
@@ -186,7 +186,7 @@ async function QuestionsController(message, bot, psql) {
         correctAnswers = 0;
         await bot.sendMessage(
           chatId,
-          `${message.text} ta savol. Har bir savol uchun 30 sekund vaqt.\nTayyor bo'lsangiz Boshlash'ni bosing!`,
+          `${message.text} ta savol. Har bir savol uchun 20 sekund vaqt.\nTayyor bo'lsangiz Boshlash'ni bosing!`,
           {
             reply_markup: {
               keyboard: [[{ text: "Boshlash" }]],
@@ -244,7 +244,7 @@ async function QuestionsController(message, bot, psql) {
 
             await bot.sendMessage(
               chatId,
-              `${message.text} ta savol. Har bir savol uchun 30 sekund vaqt.\nTayyor bo'lsangiz Boshlash'ni bosing!`,
+              `${message.text} ta savol. Har bir savol uchun 20 sekund vaqt.\nTayyor bo'lsangiz Boshlash'ni bosing!`,
               {
                 reply_markup: {
                   keyboard: [[{ text: "Boshlash" }]],
