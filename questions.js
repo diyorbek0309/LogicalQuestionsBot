@@ -116,61 +116,6 @@ const questions = [
     options: ["A) Futboi haqida", "B) Sudiya", "C) Oshpaz", "D) Kotib"],
     answer: "A",
   },
-  {
-    question: "",
-    options: ["A) ", "B) ", "C) ", "D) "],
-    answer: "",
-  },
-  {
-    question: "",
-    options: ["A) ", "B) ", "C) ", "D) "],
-    answer: "",
-  },
-  {
-    question: "",
-    options: ["A) ", "B) ", "C) ", "D) "],
-    answer: "",
-  },
-  {
-    question: "",
-    options: ["A) ", "B) ", "C) ", "D) "],
-    answer: "",
-  },
-  {
-    question: "",
-    options: ["A) ", "B) ", "C) ", "D) "],
-    answer: "",
-  },
-  {
-    question: "",
-    options: ["A) ", "B) ", "C) ", "D) "],
-    answer: "",
-  },
-  {
-    question: "",
-    options: ["A) ", "B) ", "C) ", "D) "],
-    answer: "",
-  },
-  {
-    question: "",
-    options: ["A) ", "B) ", "C) ", "D) "],
-    answer: "",
-  },
-  {
-    question: "",
-    options: ["A) ", "B) ", "C) ", "D) "],
-    answer: "",
-  },
-  {
-    question: "",
-    options: ["A) ", "B) ", "C) ", "D) "],
-    answer: "",
-  },
-  {
-    question: "",
-    options: ["A) ", "B) ", "C) ", "D) "],
-    answer: "",
-  },
 ];
 
 module.exports = { questions };
