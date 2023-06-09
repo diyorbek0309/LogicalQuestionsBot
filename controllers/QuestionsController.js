@@ -144,7 +144,9 @@ async function QuestionsController(message, bot, psql) {
       }
 
       const answer = query.data[0].toUpperCase();
-      const correctAnswer = selectedQuestions[currentQuestionIndex].answer;
+      const correctAnswer =
+        selectedQuestions[currentQuestionIndex] &&
+        selectedQuestions[currentQuestionIndex].answer;
       const isCorrect = answer === correctAnswer;
 
       if (isCorrect) {
@@ -269,7 +271,9 @@ async function QuestionsController(message, bot, psql) {
       }
 
       const answer = query.data[0].toUpperCase();
-      const correctAnswer = selectedQuestions[currentQuestionIndex].answer;
+      const correctAnswer =
+        selectedQuestions[currentQuestionIndex] &&
+        selectedQuestions[currentQuestionIndex].answer;
       const isCorrect = answer === correctAnswer;
 
       if (isCorrect) {
